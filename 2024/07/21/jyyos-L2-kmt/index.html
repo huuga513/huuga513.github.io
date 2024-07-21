@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.2.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha256-XOqroi11tY4EFQMR9ZYwZWKj5ZXiftSx36RRuC3anlA=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"huuga513.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.20.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="L2-kmt 实验报告设计spinlock基本参考xv6的实现。最大的收获是关中断需要考虑锁的嵌套，只有当当前cpu不持有任何自旋锁时才能将中断恢复。 semaphore信号量实际上可以视为互斥锁的泛化。根据OSTEP对信号量的定义：  P操作：将值减一，如果减少后值小于0，阻塞当前线程  V操作：将值加一，如果有线程在等待当前信号量，唤醒其中一个   实现的信号量有四个成员：value,name">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jyyos-L2-kmt">
+<meta property="og:url" content="http://huuga513.github.io/2024/07/21/jyyos-L2-kmt/index.html">
+<meta property="og:site_name" content="Huuga513&#39;s rabbit hole">
+<meta property="og:description" content="L2-kmt 实验报告设计spinlock基本参考xv6的实现。最大的收获是关中断需要考虑锁的嵌套，只有当当前cpu不持有任何自旋锁时才能将中断恢复。 semaphore信号量实际上可以视为互斥锁的泛化。根据OSTEP对信号量的定义：  P操作：将值减一，如果减少后值小于0，阻塞当前线程  V操作：将值加一，如果有线程在等待当前信号量，唤醒其中一个   实现的信号量有四个成员：value,name">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-07-21T15:45:34.000Z">
+<meta property="article:modified_time" content="2024-07-21T07:45:52.933Z">
+<meta property="article:author" content="Huuga513">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://huuga513.github.io/2024/07/21/jyyos-L2-kmt/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://huuga513.github.io/2024/07/21/jyyos-L2-kmt/","path":"2024/07/21/jyyos-L2-kmt/","title":"jyyos-L2-kmt"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>jyyos-L2-kmt | Huuga513's rabbit hole</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Huuga513's rabbit hole</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-kmt-%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A"><span class="nav-number">1.</span> <span class="nav-text">L2-kmt 实验报告</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.1.</span> <span class="nav-text">设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#spinlock"><span class="nav-number">1.1.1.</span> <span class="nav-text">spinlock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#semaphore"><span class="nav-number">1.1.2.</span> <span class="nav-text">semaphore</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#task-t%E7%9B%B8%E5%85%B3%E6%93%8D%E4%BD%9C%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.3.</span> <span class="nav-text">task_t相关操作实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%B0%E8%B1%A1%E6%B7%B1%E5%88%BB%E7%9A%84bug"><span class="nav-number">1.2.</span> <span class="nav-text">印象深刻的bug</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E7%9A%84%E9%94%99%E8%AF%AFassertion"><span class="nav-number">1.2.1.</span> <span class="nav-text">对线程状态的错误assertion</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#idle%E7%BA%BF%E7%A8%8B%E5%AF%BC%E8%87%B4thread-starvation"><span class="nav-number">1.2.2.</span> <span class="nav-text">idle线程导致thread starvation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%90%E8%94%BD%E7%9A%84%E6%A0%88%E6%95%B0%E6%8D%AE%E7%AB%9E%E4%BA%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">隐蔽的栈数据竞争</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Huuga513</p>
+  <div class="site-description" itemprop="description">Down the rabbit hole!</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://huuga513.github.io/2024/07/21/jyyos-L2-kmt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Huuga513">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Huuga513's rabbit hole">
+      <meta itemprop="description" content="Down the rabbit hole!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="jyyos-L2-kmt | Huuga513's rabbit hole">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          jyyos-L2-kmt
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-07-21 15:45:34 / 修改时间：07:45:52" itemprop="dateCreated datePublished" datetime="2024-07-21T15:45:34Z">2024-07-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="L2-kmt-实验报告"><a href="#L2-kmt-实验报告" class="headerlink" title="L2-kmt 实验报告"></a>L2-kmt 实验报告</h1><h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><h3 id="spinlock"><a href="#spinlock" class="headerlink" title="spinlock"></a>spinlock</h3><p>基本参考xv6的实现。最大的收获是关中断需要考虑锁的嵌套，只有当当前cpu不持有任何自旋锁时才能将中断恢复。</p>
+<h3 id="semaphore"><a href="#semaphore" class="headerlink" title="semaphore"></a>semaphore</h3><p>信号量实际上可以视为互斥锁的泛化。根据OSTEP对信号量的定义：</p>
+<ul>
+<li><p>P操作：将值减一，如果减少后值小于0，阻塞当前线程</p>
+</li>
+<li><p>V操作：将值加一，如果有线程在等待当前信号量，唤醒其中一个</p>
+</li>
+</ul>
+<p>实现的信号量有四个成员：<code>value</code>,<code>name</code>,自旋锁<code>lock</code>和链表头<code>wait_list</code>。</p>
+<p>使用自旋锁保护对信号量内部的访问，用链表保存正在等待当前信号量的线程。阻塞线程通过修改线程结构体的状态实现。</p>
+<h3 id="task-t相关操作实现"><a href="#task-t相关操作实现" class="headerlink" title="task_t相关操作实现"></a>task_t相关操作实现</h3><p>操作系统是状态机的管理器。一个task在kernel内就只是一个数据结构。因此，<code>kmt_create</code>和<code>kmt_teardown</code>唯一的工作是构造和析构作为数据结构的<code>task_t</code>，</p>
+<p>不涉及调度和运行，实现难度较低。<code>os_trap</code>和<code>os_on_irq</code>基本按照实验指南实现。L2中，个人认为实现难度最大的是调度程序<code>kmt_schedule</code>。</p>
+<h2 id="印象深刻的bug"><a href="#印象深刻的bug" class="headerlink" title="印象深刻的bug"></a>印象深刻的bug</h2><h3 id="对线程状态的错误assertion"><a href="#对线程状态的错误assertion" class="headerlink" title="对线程状态的错误assertion"></a>对线程状态的错误assertion</h3><p>最开始假设cpu当前执行流的状态一定是<code>running</code>。导致了错误的assertion:<code>assert(current-&gt;state==running)</code>。但是后来发现，当一个线程调用<code>sem_wait</code>并被阻塞但没有执行到<code>yield</code>前，当前执行流确实处于<code>blocked</code>状态。</p>
+<h3 id="idle线程导致thread-starvation"><a href="#idle线程导致thread-starvation" class="headerlink" title="idle线程导致thread starvation"></a>idle线程导致thread starvation</h3><p>最开始的idle线程是一个简单的死循环：<code>iset(true) while(1);</code>。生产者-消费者测试也能正常工作，但oj上显示thread starvation。后来将<code>while(1);</code>改为<code>while(1)&#123;yield();&#125;</code>后顺利通过。原因应该是最开始的idle线程没有进行主动<code>yield</code>，只能依靠时钟中断切换线程，导致生产者-消费者线程需要等待较长时间才能被调度执行。</p>
+<h3 id="隐蔽的栈数据竞争"><a href="#隐蔽的栈数据竞争" class="headerlink" title="隐蔽的栈数据竞争"></a>隐蔽的栈数据竞争</h3><p>第一次实现完成后，在1 cpu下工作完全正常，但在多cpu下总是触发大量assertion，检查实现和debug都无法找到原因。后来查阅AM文档对CTE的说明，发现trap会借用当前执行流的栈。</p>
+<p>在trap时，当前执行流的栈会依次压入<code>context</code>-&gt;<code>...</code>-&gt;<code>os_trap</code>的栈帧。当<code>os_trap</code>返回<code>Context*</code>后，cpu会在<code>...</code>的栈帧内进行换栈等一系列操作。假设这样一个情况：CPU0运行task A，CPU 1运行task B。随后的调度决定让CPU0和CPU1交换它们的task，即让CPU0运行task B，让CPU1运行task A（这是很有可能发生的）。假设CPU1率先借用task B的栈切换到了task A，但CPU0还没有完成切换到task B的工作，即CPU0还在task A的栈上执行。此时CPU0和CPU1同时运行在task A的栈上。CPU1很有可能破坏CPU0在栈上存储的用于换栈的信息，导致CPU0产生未知行为。即CPU0和CPU1在task A的栈上发生了数据竞争。这个数据竞争极其隐蔽，如果不是RTFM和依靠一点运气很难发现。</p>
+<p>栈数据竞争引出了重要的一条实现要求：永远不要调度一个cpu的当前执行流。可以通过禁止调度程序调度所有cpu的当前task实现。即为task增加一个<code>disabled</code>标志位，标志是否禁止调度。在<code>kmt_context_save</code>被调用时，（<code>kmt_context_save</code>在trap中总是第一个被调用），就设置当前task的<code>disabled</code>位为<code>true</code>。在调度程序<code>kmt_schedule</code>中，会忽略所有设置了<code>disabled</code>位的task。只有在确保已经从task A切换到task B后，才能将task A的<code>disabled</code>位清空，重新允许调度。而我们知道，当task B陷入trap后，一定代表已经切换到了task B。通过在<code>task_t</code>中增加<code>prev</code>成员追踪此task是从哪个task调度来的，并在<code>kmt_context_save</code>中将<code>prev</code>的<code>disabled</code>位清空，就可以实现<code>disabled</code>位的还原。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/07/21/jyyos-L1-pmm/" rel="prev" title="jyyos-L1-pmm">
+                  <i class="fa fa-angle-left"></i> jyyos-L1-pmm
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/07/22/jyyos-%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" rel="next" title="jyyos-课堂笔记">
+                  jyyos-课堂笔记 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Huuga513</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
