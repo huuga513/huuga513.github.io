@@ -1,0 +1,82 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>java中被加载进内存的类都可以认为对应着一个类对象示例。也可以反过来认为，class文件是类对象序列化后的结果。类对象包含指定类型的meta data，包括method，constructor，field等。JVM加载类的过程就是生成类对象的过程。.class文件对人类是不可读的，使用javap工具可以阅读。</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// 遍历类public method</span>
+<span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">clz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Method</span><span class="w"> </span><span class="n">meth</span><span class="p">:</span><span class="n">clz</span><span class="p">.</span><span class="na">getMethods</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// do something</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>类加载的本质是从类字节数据（表示为一个字节数组）构造出类对象，由ClassLoader.defineClass实现。尽管ClassLoader没有未实现的接口，其仍然被声明为abstract类，目的是禁止直接使用此类，需要通过继承使用。</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// ClassLoader 示例</span>
+<span class="kd">class</span> <span class="nc">MyClassLoader</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">getClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="kd">super</span><span class="p">.</span><span class="na">defineClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">length</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<p>类加载器有多个继承层次，可以通过继承实现自己的类加载器。从各种源（只要是字节流）加载类。</p>
+<p>反射是java提供的一套api。可以在完全不知道对象类型的情况下操纵对象并实现多态。其主要逻辑是通过查询向对象动态获取各种meta data。</p>
+<blockquote>
+<p>Java reflection allows an object to look in the mirror and discover what fields, methods, and constructors it has.</p>
+</blockquote>
+<p>Method对象是反射API提供的对象中最常用的，constructor和field对象类似。对象通过“查询”(look in the mirror)获得自己有的method对象。</p>
+<div class="codehilite"><pre><span></span><code><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// 创建一个 String 对象</span>
+<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello, World!&quot;</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// 将 String 引用转换为 Object 引用</span>
+<span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// 获取 Object 类的 Class 对象</span>
+<span class="w">    </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">objectClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="na">getClass</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// 获取 hashCode 方法</span>
+<span class="w">    </span><span class="n">Method</span><span class="w"> </span><span class="n">hashCodeMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">objectClass</span><span class="p">.</span><span class="na">getMethod</span><span class="p">(</span><span class="s">&quot;hashCode&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// 调用 hashCode 方法</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">hashCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="n">hashCodeMethod</span><span class="p">.</span><span class="na">invoke</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// 输出 hashCode 值</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;HashCode of the string: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">hashCode</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">NoSuchMethodException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Method not found: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">SecurityException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Security exception: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IllegalAccessException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Illegal access: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IllegalArgumentException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Illegal argument: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;An unexpected error occurred: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><em>脱裤子放屁？</em></p>
+<p>明明我们可以直接将指向String的Object引用类型转换为String引用，然后自由使用hashcode方法。为什么要大费周章地使用反射？</p>
+<p>注意，上面的例子只是一个简单的示例，目的在于展示反射的书写内容。反射的目标是在我们对对象<strong>一无所知</strong>的时候，让对象<em>自省</em>得知自己的类是什么。并且可以截获对象的方法调用。相当于得到了动态调整对象的空间。比如proxy类，目标是可以截获所有类的方法调用。强制类型转换本质上是一种静态代码，但是在实现proxy的时候，你没有办法为每个方法都书写代理代码。只能通过反射截获method call。</p>
+<p>总之，当你想要动态实现针对所有对象的操作时，请用反射。</p>
+        </article>
+        

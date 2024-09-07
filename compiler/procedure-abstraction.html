@@ -1,0 +1,45 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>支持类C语言的运行时结构</h2>
+<p>为了实现过程抽象和作用域化的命名空间这两个抽象，编译器做转换时必须建立一组运行时结构。</p>
+<p>AR(Activation Record)是与特定过程调用相关的数据结构。一般来说，过程的返回地址，参数，局部变量等都存储在AR中。</p>
+<h3>AR的分配方式</h3>
+<p>－ 栈分配
+即在栈上分配活动记录的空间</p>
+<p>C就是这个做法
+－ 堆分配
+如果过程的生存期超出其调用者的生存期，或者过程会返回closure，其中引用了已返回过程的局部变量，那么在栈上分配AR就不合适了。比如：</p>
+<div class="codehilite"><pre><span></span><code><span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">)(</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+
+<p>返回的lambda函数引用了已返回过程的局部变量。此时AR可以保存在堆中。</p>
+<p>－ 静态分配
+对于leaf procedure，由于其不会再调用其他procedure，可以静态分配AR空间。从而省去动态分配AR空间的开销，在堆分配的AR系统上更是如此。</p>
+<p>一个很自然的想法是，能否让所有的procedure的AR都静态分配？或者，满足什么性质的procedure可以静态分配AR？</p>
+<p>第一个问题的答案显然是否定的，最简单的例子就是递归。一个递归procedure可能无限调用自身。但是这启发我们，是不是只要调用链上同一个函数永远不会出现两次以上，就可以静态分配了呢？是的！换句话说就是call graph中无环子图上的procedure都可以静态分配AR。</p>
+<p>证明可以通过将函数调用过程抽象为图遍历实现。这种特殊的图遍历每访问到一个节点，不管之前有没有访问过，都需要为其分配一块新空间，只有从节点退出时能释放此空间。在一棵树上最坏情况就是为每个节点都分配空间，不会有更坏情况。因此无环子图上的静态分配是可行的。</p>
+<p>leaf procedure的核心性质是调用链上永远只会有一个leaf procedure，因此所有leaf procedure可以共享同一个AR空间。
+- 合并AR
+如果编译器能确定一组procedure总是按照同一组顺序调用，编译器可以合并AR。换句话说，call graph上一条链可以合并为同一个procedure。</p>
+        </article>
+        

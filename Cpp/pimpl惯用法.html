@@ -1,0 +1,107 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>在C++的软件开发中，为了提高封装性、降低依赖关系以及简化接口使用者的编译过程，开发者常常采用一种称为“Pointer to Implementation”（简称Pimpl）的设计模式。这种模式通过将类的具体实现细节隐藏在一个私有的指针后面，从而对外部用户隐藏了内部实现。</p>
+<p>示例：
+将 <code>PrivateData</code> 类的实现移到另一个文件中，可以更好地分离头文件和源文件，同时保持封装性。以下是具体的做法：</p>
+<p>首先，创建一个头文件 <code>public_interface.h</code>，其中包含 <code>PublicInterface</code> 类的声明，以及 <code>PrivateData</code> 类的前向声明。然后，在 <code>public_interface.cpp</code> 文件中定义 <code>PrivateData</code> 类及其成员函数。</p>
+<h3>public_interface.h</h3>
+<div class="codehilite"><pre><span></span><code><span class="cp">#ifndef PUBLIC_INTERFACE_H</span>
+<span class="cp">#define PUBLIC_INTERFACE_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+
+<span class="c1">// 前向声明</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PrivateData</span><span class="p">;</span>
+
+<span class="c1">// 公开的接口类</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublicInterface</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="c1">// 使用std::unique_ptr来管理PrivateData对象的生命周期</span>
+<span class="w">    </span><span class="k">explicit</span><span class="w"> </span><span class="n">PublicInterface</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// 提供一个公共方法来获取PrivateData中的数据</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="nf">getData</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">PrivateData</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pImpl</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cp">#endif </span><span class="c1">// PUBLIC_INTERFACE_H</span>
+</code></pre></div>
+
+<h3>public_interface.cpp</h3>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;public_interface.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="c1">// 私有的实现类</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PrivateData</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">PrivateData</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">data</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">getData</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">data</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// 构造函数</span>
+<span class="n">PublicInterface</span><span class="o">::</span><span class="n">PublicInterface</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">pImpl</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">PrivateData</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="c1">// 获取数据的方法</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">PublicInterface</span><span class="o">::</span><span class="n">getData</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">pImpl</span><span class="o">-&gt;</span><span class="n">getData</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3>main.cpp</h3>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;public_interface.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PublicInterface</span><span class="w"> </span><span class="n">pi</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Data: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pi</span><span class="p">.</span><span class="n">getData</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3>说明</h3>
+<ol>
+<li><strong>头文件 (<code>public_interface.h</code>)</strong>:</li>
+<li>在头文件中，我们只声明了 <code>PublicInterface</code> 类和 <code>PrivateData</code> 的前向声明。</li>
+<li>
+<p>这样做可以避免在头文件中暴露 <code>PrivateData</code> 的具体实现。</p>
+</li>
+<li>
+<p><strong>源文件 (<code>public_interface.cpp</code>)</strong>:</p>
+</li>
+<li>在源文件中，我们定义了 <code>PrivateData</code> 类以及 <code>PublicInterface</code> 类的所有成员函数。</li>
+<li>
+<p>这种方式使得 <code>PrivateData</code> 的实现细节被隐藏在 <code>.cpp</code> 文件中，不会暴露给其他模块。</p>
+</li>
+<li>
+<p><strong>主程序 (<code>main.cpp</code>)</strong>:</p>
+</li>
+<li>主程序只需要包含 <code>public_interface.h</code> 头文件即可使用 <code>PublicInterface</code> 类。</li>
+</ol>
+<p>通过这种方式，我们可以将实现细节与接口分离，同时保持良好的封装性。这样不仅减少了其他模块对 <code>PrivateData</code> 的依赖，也使得 <code>PublicInterface</code> 类更容易维护。</p>
+        </article>
+        

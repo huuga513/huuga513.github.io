@@ -1,0 +1,34 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>之前的优化只是在线性/树状图上收集信息。当控制流涉及环时，数据流分析才能为我们收集信息。</p>
+<h2>支配集</h2>
+<p>求支配集实际上是解如下方程：
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0004</mn><mi></mi></mrow></math>
+初始条件为入口节点<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>D</mi><mi>o</mi><mi>m</mi><mo stretchy="false">&#x00028;</mo><msub><mi>n</mi><mn>0</mn></msub><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0002</mn><mi></mi><msub><mi>n</mi><mn>0</mn></msub><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0003</mn><mi></mi></mrow></math>，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mo>&#x02200;</mo><mi>n</mi><mo>&#x02260;</mo><msub><mi>n</mi><mn>0</mn></msub><mo>&#x0002C;</mo><mi>D</mi><mi>o</mi><mi>m</mi><mo stretchy="false">&#x00028;</mo><mi>n</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mi>N</mi></mrow></math>,<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>N</mi></mrow></math>是图中的所有节点。</p>
+<p>因为每个节点的信息只需要前驱的信息进行计算，因此这是一个前向数据流问题。通过观察，可以证明每个节点的Dom集在计算的过程中不会增大，且大小有限。因此在有限的计算中一定能到达不动点。并且通过（复杂的）数学可以证明这样的不动点是唯一的，也就是解唯一。前向数据流分析可以使用逆后序（ROP）计算。</p>
+<h2>活动变量分析</h2>
+<p>如果存在一条路径，从p到v的某个使用点。则称v在p点活动。活动变量的一个应用是未初始化变量分析，如果一个变量在<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msub><mi>n</mi><mn>0</mn></msub></mrow></math>活动，则其一定存在未初始化使用。</p>
+<h2>可达性</h2>
+<p>如果存在一条路径，从变量v的一个定义到某点p，且这条路径上v没有被重新定义，则称这个定义可以到达p</p>
+        </article>
+        

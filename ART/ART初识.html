@@ -1,0 +1,66 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>概述：
+https://en.wikipedia.org/wiki/Android_Runtime</p>
+<p>安卓他是运行在dalvik/art虚拟机上的，而dalvik/art虚拟机又是运行在linux内核上。从这个角度来说，dalvik/art是linux程序，而安卓是linux程序davik/art上的一个进程。安卓所有用户与硬件的交互，都另外要走子系统、framework层还再封装出一个HAL层，而应用通过JNI去实现java与c/c++的调用。如果从这角度来说，安卓连“系统”都算不上，反倒像QT，只是胆子比QT大，敢去改内核的东西然后变出一个android内核。技术强，弄出好几层封装。</p>
+<p>作者：chatCPT
+链接：https://www.zhihu.com/question/311369713/answer/2674198143
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+<h2>Dalvik</h2>
+<p><strong>traced-based</strong> JIT compilation</p>
+<h2>ART</h2>
+<p>Andorid runtime</p>
+<p><strong>AOT(Ahead Of Time)</strong> compilation</p>
+<h2>APK installation</h2>
+<p>.dex</p>
+<p>-compiled by Dalvik-&gt;.odex</p>
+<p>-compiled by ART-&gt;ELF</p>
+<h2>编译种类</h2>
+<ul>
+<li>前端编译：把程序编译为.class</li>
+<li>JIT编译：在运行时把Byte Code编译为native code</li>
+<li>AOT编译：提前把程序编译为native code</li>
+</ul>
+<h2>APK编译</h2>
+<p>ART 使用预先 (AOT) 编译，并且从 Android 7 开始结合使用 AOT 编译、即时 (JIT) 编译和解译，AOT 编译可由配置文件引导。所有这些执行模式的组合均可配置，我们将在本部分中对此进行介绍。例如，Pixel 设备配置为在以下流程中运行：</p>
+<ol>
+<li>应用最初是通过 Play 商店分发的 dex 元数据 (.dm) 文件安装的，该文件包含云配置文件。ART 会对云配置文件中列出的方法进行 AOT 编译。或者，如果应用不是通过 dex 元数据文件安装的，则不会执行 AOT 编译。</li>
+<li>应用前几次运行时，系统会对未经过 AOT 编译的方法进行解译。在经过解译的方法中，经常执行的那些方法随后会进行 JIT 编译。ART 会根据执行情况生成一个本地配置文件，并将其与云配置文件（如果有）相结合。</li>
+<li>当设备空闲并在充电时，编译守护程序会运行，以便根据在前几次运行期间生成的组合配置文件重新编译应用。</li>
+<li>在后续运行应用时，ART 会使用编译守护程序生成的工件，这些工件包含更多经过 AOT 编译的代码（与未经过 AOT 编译但仍经过解译或 JIT 编译的方法生成的工件相比）。ART 会根据执行情况更新配置文件安装，然后，系统会在后续运行编译守护程序时收集该配置文件。</li>
+</ol>
+<h3>编译优化假设</h3>
+<ol>
+<li>编译比解释更快</li>
+<li>编译需要占用更多存储空间</li>
+<li>编译hot code比cold code更有价值</li>
+<li>权衡：AOT和JIT</li>
+</ol>
+<h2>Android so库</h2>
+<p>libdev.so</p>
+<p>libart.so</p>
+<h2>VM类型</h2>
+<p>register based（？）</p>
+        </article>
+        

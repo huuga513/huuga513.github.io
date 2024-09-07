@@ -1,0 +1,45 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>JVM的class file包含一个单独的class结构体，定义如下：</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// u4 代表长四个字节</span>
+<span class="n">ClassFile</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">u4</span><span class="w">             </span><span class="n">magic</span><span class="p">;</span><span class="w">  </span><span class="c1">//0xCAFEBABE</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">minor_version</span><span class="p">;</span><span class="w">  </span><span class="c1">//小版本</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">major_version</span><span class="p">;</span><span class="w">  </span><span class="c1">//大版本</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">constant_pool_count</span><span class="p">;</span><span class="w"> </span><span class="c1">//常量池大小（特别注意常量池索引从1开始计数），如此值为22，则常量池有21项</span>
+<span class="w">    </span><span class="n">cp_info</span><span class="w">        </span><span class="n">constant_pool</span><span class="p">[</span><span class="n">constant_pool_count</span><span class="mi">-1</span><span class="p">];</span><span class="w"> </span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">access_flags</span><span class="p">;</span><span class="w">  </span><span class="c1">//类是private还是public</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">this_class</span><span class="p">;</span><span class="w">  </span><span class="c1">//指向常量池中本类名（一个字符串）的索引</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">super_class</span><span class="p">;</span><span class="w"> </span><span class="c1">//指向常量池中父类名（一个字符串）的索引</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">interfaces_count</span><span class="p">;</span><span class="w">  </span><span class="c1">//接口数，表示该类实现了多少个接口</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">interfaces</span><span class="p">[</span><span class="n">interfaces_count</span><span class="p">];</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">fields_count</span><span class="p">;</span><span class="w">  </span><span class="c1">//field（成员变量）数</span>
+<span class="w">    </span><span class="n">field_info</span><span class="w">     </span><span class="n">fields</span><span class="p">[</span><span class="n">fields_count</span><span class="p">];</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">methods_count</span><span class="p">;</span><span class="w"> </span><span class="c1">//方法数</span>
+<span class="w">    </span><span class="n">method_info</span><span class="w">    </span><span class="n">methods</span><span class="p">[</span><span class="n">methods_count</span><span class="p">];</span>
+<span class="w">    </span><span class="n">u2</span><span class="w">             </span><span class="n">attributes_count</span><span class="p">;</span><span class="w">  </span><span class="c1">//属性数</span>
+<span class="w">    </span><span class="n">attribute_info</span><span class="w"> </span><span class="n">attributes</span><span class="p">[</span><span class="n">attributes_count</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div>
+        </article>
+        

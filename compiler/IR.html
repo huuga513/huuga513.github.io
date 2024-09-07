@@ -1,0 +1,45 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>IR是编译器眼中程序的权威表示，编译器绝不会回头查看程序源代码。编译器眼中的程序就是IR。</p>
+<p>有不同种类的IR，如图IR，线性IR等。有人认为用树和图来表示程序最为自然，因此有图IR。而有人认为前端语言和后端语言（汇编）都是线性的，因此线性IR更适合优化。</p>
+<p>IR的设计需要能反映源语言的特征，并尽可能多地有利于优化。如OO语言的IR必须有类层次层级的信息，而C的IR不需要。</p>
+<h2>图IR</h2>
+<p>语法树和AST（抽象语法树）是一种图IR。</p>
+<p>CFG和DFG也是图IR。CFG不必多言。DFG是指反应了数据流向，即从定义-&gt;使用-&gt;使用-&gt;使用的图。无论CFG和DFG都是一种IR。</p>
+<p>不同的IR之间可以互相转换，从线性IR中也可以构造出CFG。</p>
+<h2>线性IR</h2>
+<p>典型的线性IR如堆栈机（JVM）或register machine。前者将所有操作都放到栈上，后者忽略现实机器中寄存器数量的限制。</p>
+<h2>SSA</h2>
+<p>SSA也许是当今影响力最大也最常见的IR。很多不同的数据流信息都表明，如果每种变换都使用自己的分析，那么分析的花费就可能过大。我们希望使用单趟分析来支持多种变换。</p>
+<p>SSA是一种编码了控制流和数据流信息的IR。换句话说，它本身就反应了控制流和数据流分析的结果。只要有了SSA，就可以执行许多经典的变换。</p>
+<p>SSA中，一个变量的各处定义会使用不同的下标表示。实际上避免了变量的值被kill掉的问题，使得变量的值全程可用。下标还蕴含了可达性信息，即一个变量定义的可达性。</p>
+<p>SSA引入了特殊的函数<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x003D5;</mi></mrow></math>函数。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x003D5;</mi></mrow></math>函数的含义是，控制流从哪个bb转移而来，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x003D5;</mi></mrow></math>函数就取那个bb中对应的变量值，且同一个bb中的<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x003D5;</mi></mrow></math>函数并行执行，不考虑顺序。</p>
+<h2>SSA构造</h2>
+<p>最简单的，先构造CFG，对于有多个前驱的bb（汇聚点）中的每个前驱中有对应版本的变量，插入<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x003D5;</mi></mrow></math>函数。然后计算可达性信息，为下标标号。</p>
+<h2>符号表</h2>
+<p>编译器会利用符号表作为中枢存储结构存取编译时得到的信息。其主要功能是将符号（如变量名）映射到特定的值。</p>
+<p>单纯的映射可以通过散列表实现。我们还关心能否实现作用域。</p>
+<p>可以用表束（即多个表）实现支持作用域的符号表。查询表束的过程类似于python closure中的查找变量。</p>
+<p>每个表只保存本作用域内符号信息，并保存指向自己父作用域表的指针。编译器查找符号时先在本作用域内寻找，如果找不到再依次向外层作用域的表寻找。</p>
+        </article>
+        

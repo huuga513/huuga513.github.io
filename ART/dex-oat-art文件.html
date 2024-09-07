@@ -1,0 +1,39 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>dex文件</h2>
+<p>dex文件是dalvik虚拟机执行的字节码格式。即使在ART虚拟机已经取代dalvik虚拟机的今天，.dex文件仍然作为app的代码数据放置于app的apk包中。ART虚拟机并不能直接执行dex字节码（存疑），而是通过dex2oat工具在应用安装时生成oat文件（Optimized ART）。</p>
+<h2>oat文件</h2>
+<p>oat文件是ART虚拟机可以理解执行的代码。其本质上是一个ELF文件。内部包含了针对特定架构优化过的机器码以及部分dex字节码，这些机器码是由 ART 在应用安装或更新时从 .dex 文件中的字节码转换而来。由于 .oat 文件基于 ELF 格式，它们可以在支持 ELF 的操作系统上被读取和解析。这意味着开发人员可以使用标准的 ELF 工具来检查 .oat 文件的内容，例如 readelf 命令。但由于oat文件执行需要ART环境，所以不能直接在linux上执行oat文件，而只能通过ELF工具检查其内容。</p>
+<h2>art文件</h2>
+<p>art文件并不包含可用的代码，而是包含了APK中列出的一些字符串和类的ART内部表示，它用于加快应用启动速度。尽管ART虚拟机能够执行oat文件，但art文件仍然有其存在的必要。art文件更类似于一个cache，可以省去app启动时构造对象的时间。一般来说，ART总是为核心库产生art文件，而只为用户app产生oat文件，其art文件在程序启动时选择性（根据profile文件）产生。</p>
+<h2>dex2oat程序</h2>
+<p>dex2oat负责执行将dex转换为oat的工作。转换工作有不同的等级，由低到高分别是仅校验和尽可能完全编译为native函数。</p>
+<p>编译时，有三种编译模式：</p>
+<h3>dex2dex</h3>
+<p>即将dex函数优化为同样的dex函数。dex到dex只是优化，优化的结果是将某些指令和操作数换成对应的快速操作指令和对应的操作数。</p>
+<h3>JNI编译</h3>
+<p>jni方法的编译。该种编译处理专门针对jni方法。它将为jni方法的调用创建一段汇编代码。在这段汇编代码中将建立相应的栈帧、拷贝调用参数。</p>
+<h3>dex到native</h3>
+<p>编译dex函数为native代码。通过后端编译器实现。</p>
+        </article>
+        

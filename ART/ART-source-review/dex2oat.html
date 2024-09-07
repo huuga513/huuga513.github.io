@@ -1,0 +1,122 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>compile到driver</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// dex2oat.cc/art::Dex2oat()</span>
+<span class="kd">static</span><span class="w"> </span><span class="n">dex2oat</span><span class="p">::</span><span class="n">ReturnCode</span><span class="w"> </span><span class="nf">Dex2oat</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">b13564922</span><span class="p">();</span>
+
+<span class="w">  </span><span class="n">TimingLogger</span><span class="w"> </span><span class="nf">timings</span><span class="p">(</span><span class="s">&quot;compiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Allocate `dex2oat` on the heap instead of on the stack, as Clang</span>
+<span class="w">  </span><span class="c1">// might produce a stack frame too large for this function or for</span>
+<span class="w">  </span><span class="c1">// functions inlining it (such as main), that would not fit the</span>
+<span class="w">  </span><span class="c1">// requirements of the `-Wframe-larger-than` option.</span>
+<span class="w">  </span><span class="n">std</span><span class="p">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Dex2Oat</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dex2oat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="p">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Dex2Oat</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">timings</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Parse arguments. Argument mistakes will lead to exit(EXIT_FAILURE) in UsageError.</span>
+<span class="w">  </span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">ParseArgs</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// If needed, process profile information for profile guided compilation.</span>
+<span class="w">  </span><span class="c1">// This operation involves I/O.</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">UseProfile</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">LoadProfile</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">LOG</span><span class="p">(</span><span class="n">ERROR</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Failed to process profile file&quot;</span><span class="p">;</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">dex2oat</span><span class="p">::</span><span class="n">ReturnCode</span><span class="p">::</span><span class="n">kOther</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nl">art</span><span class="p">::</span><span class="n">MemMap</span><span class="p">::</span><span class="n">Init</span><span class="p">();</span><span class="w">  </span><span class="c1">// For ZipEntry::ExtractToMemMap, and vdex.</span>
+
+<span class="w">  </span><span class="c1">// Check early that the result of compilation can be written</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">OpenFile</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">dex2oat</span><span class="p">::</span><span class="n">ReturnCode</span><span class="p">::</span><span class="n">kOther</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+
+<span class="w">  </span><span class="nl">dex2oat</span><span class="p">::</span><span class="n">ReturnCode</span><span class="w"> </span><span class="n">setup_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">Setup</span><span class="p">();</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">setup_code</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">dex2oat</span><span class="p">::</span><span class="n">ReturnCode</span><span class="p">::</span><span class="n">kNoFailure</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">EraseOutputFiles</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">setup_code</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// TODO: Due to the cyclic dependencies, profile loading and verifying are</span>
+<span class="w">  </span><span class="c1">// being done separately. Refactor and place the two next to each other.</span>
+<span class="w">  </span><span class="c1">// If verification fails, we don&#39;t abort the compilation and instead log an</span>
+<span class="w">  </span><span class="c1">// error.</span>
+<span class="w">  </span><span class="c1">// TODO(b/62602192, b/65260586): We should consider aborting compilation when</span>
+<span class="w">  </span><span class="c1">// the profile verification fails.</span>
+<span class="w">  </span><span class="c1">// Note: If dex2oat fails, installd will remove the oat files causing the app</span>
+<span class="w">  </span><span class="c1">// to fallback to apk with possible in-memory extraction. We want to avoid</span>
+<span class="w">  </span><span class="c1">// that, and thus we&#39;re lenient towards profile corruptions.</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">UseProfile</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">VerifyProfileData</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nl">dex2oat</span><span class="p">::</span><span class="n">ReturnCode</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dex2oat</span><span class="o">-&gt;</span><span class="n">IsImage</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CompileImage</span><span class="p">(</span><span class="o">*</span><span class="n">dex2oat</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CompileApp</span><span class="p">(</span><span class="o">*</span><span class="n">dex2oat</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="p">...</span>
+</code></pre></div>
+
+<p>根据编译的对象是系统image还是用户app，分别调用<code>CompileImage</code>和<code>CompileApp</code>。它们都返回<code>class_loader</code>编译好的方法就存放在<code>class_loader</code>中。</p>
+<p><code>CompileImage</code>和<code>CompileApp</code>内部都通过<code>dex2oat::Compiler</code>实现，其也返回<code>class_loader</code>。</p>
+<p><code>dex2oat::Compile()</code>在设置好<code>driver_</code>指针后，调用<code>CompileDexFile()</code>。它接受一个存储指向<code>DexFile</code>的指针的vector引用，并返回<code>class_loader</code></p>
+<p>成员<code>driver_</code>是<code>CompilerDriver</code>类型的指针。编译的信息存储在<code>CompilerDriver</code>对象中，<code>Compile()</code>函数new了一个新对象并reset此指针完成配置。然后<code>CompileDexFiles(dex_files);</code>完成编译。</p>
+<p>在<code>CompileDexFiles()</code>中，调用了：</p>
+<div class="codehilite"><pre><span></span><code><span class="n">driver</span><span class="o">-&gt;</span><span class="n">Precompile</span><span class="p">(...);</span>
+<span class="p">...</span>
+<span class="n">driver</span><span class="o">-&gt;</span><span class="n">CompileAll</span><span class="p">(</span><span class="n">class_loader</span><span class="p">,</span><span class="w"> </span><span class="n">dex_files</span><span class="p">,</span><span class="w"> </span><span class="n">timings_</span><span class="p">);</span>
+<span class="p">...</span>
+</code></pre></div>
+
+<p>虽然这两个函数都没有返回值，但是信息（包括编译好的方法）都存储在了<code>driver_</code>和<code>class_loader</code>中。</p>
+<p>接下来控制流进入<code>CompilerDriver</code>类的代码。</p>
+<h2>driver分析</h2>
+<p><code>CompilerDriver</code>类的实现位于<code>art/dex2oat/driveri/compiler_driver.h(.cc)</code>中。</p>
+<p><code>CompileAll</code>的功能是编译所有能编译的类和方法。内部调用了<code>Compile</code>函数，<code>Compile</code>函数的功能也是编译所有能编译的类和方法。</p>
+<p><code>Compile</code>中调用了两次<code>CompileDexFile</code>成员函数，用于编译<strong>单个</strong> dex file 两次的区别在于最后一个参数——回调函数。<code>CompileMethodQuick</code>将dex编译为oat，<code>CompileMethodDex2Dex</code>对dex进行优化。</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// compiler_driver.cc</span>
+</code></pre></div>
+
+<p>程序通过<code>context.ForAllLambda</code>发起线程执行编译，最后控制流转入回调函数参数。</p>
+<h2>CompileMethodQuick</h2>
+<p><code>CompileMethodQuick</code>构造<code>quick_fn</code>lambda函数。<code>quick_fn</code>返回编译好的方法，在执行时完成包括是否应该profile guide compilation的检查。如果编译器拒绝编译或者编译不成功，则返回<code>null</code>。</p>
+<p><code>quick_fn</code>内部根据要编译的方法类型，调用<code>compiled_method=driver-&gt;GetCompiler()-&gt;JniCompile()</code>或<code>compiled_method=driver-&gt;GetCompiler()-&gt;Compile()</code>编译方法。</p>
+<p><code>CompileMethodDex2Dex</code>同理。</p>
+<p>最后两个函数都通过让<code>CompileMethodHarness</code>调用<code>quick_fn</code>完成编译。</p>
+<p><code>CompileMethodHarness</code>如果<code>quick_fn</code>返回值不为<code>nullptr</code>，则将对应的编译后方法家人dirver中。</p>
+<div class="codehilite"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">compiled_method</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">driver</span><span class="o">-&gt;</span><span class="n">AddCompiledMethod</span><span class="p">(</span><span class="n">method_ref</span><span class="p">,</span><span class="w"> </span><span class="n">compiled_method</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h2>总结</h2>
+<p>ART编译是通过逐级分解的方式进行的。从<code>CompileImage|CompileApp</code>到<code>CompileAll</code>再到<code>Compile</code>，都是以一整个Image/App为输入（表示为一系列dex file）。在<code>Compile</code>中，对逐个dex file调用<code>CompileDexFile</code>进行编译，对象是单个dex file。在<code>CompileDexFile</code>中，对逐个method调用<code>compile_fn</code>即<code>CompileMethodQuick</code>和<code>CompileMtehodDex2Dex</code>进行编译，对象是单个methhod，最后完成编译。</p>
+        </article>
+        

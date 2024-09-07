@@ -1,0 +1,34 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>ART能将dex指令编译为native代码。就ART虚拟机而言，它的编译优化器的输入是APK中的dex字节码，输出是优化后的HInstruction（ART中的IR）。在编译时，可以进行优化工作。优化工作也是通过一个个Pass进行的。</p>
+<h2>将.dex文件解析为CFG</h2>
+<p>ART将.dex文件中一个Java函数解析为CFG的代码在<code>block_builder.cc-&gt;HBasicBlockBuilder::Build()</code>中。</p>
+<p>解析完成后，可以建立一个函数的CFG。得到一个<code>HGraph</code>对象，bb存放在<code>HGraph</code>的<code>blocks</code>中，为<code>HBasicBlock</code>。可以借助<code>HBasicBlock</code>的<code>successors_</code>和<code>predcessors_</code>成员访问bb的前驱和后继。</p>
+<h2>在CFG上构建dominator tree</h2>
+<p>TODO</p>
+<h2>将dex字节码转换为HInstruction（IR）</h2>
+<p><code>instruction_builder.cc-&gt;HInstructionBuilder::Build()</code>在整理好的CFG上工作，通过RPO（逆后序遍历）遍历CFG上的bb，将bb中的dex字节码转化为HInstruction。至于使用RPO的原因，是其有性质：在遍历到节点V时V的前驱一定已经被遍历完。 ART IR构造完毕后，SSA的PHI函数也相应得到添加。但对SSA而言，这个处理是比较简单和粗糙的，所以ART优化器在优化之前的最后一步是调用SsaBuilder的Build函数以对SSA进行更进一步的处理，然后将CFG设置其SSA标志以表示CFG的SSA改造完成。构造SSA的函数位于：<code>ssa_builder.cc-&gt;SsaBuilder::BuildSsa()</code></p>
+<h2>在SSA IR上执行优化</h2>
+<p>即执行各种Pass</p>
+        </article>
+        

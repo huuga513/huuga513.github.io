@@ -1,0 +1,66 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h1>赛博考古之Dalvik虚拟机</h1>
+<p>最近想了解一下Android的虚拟机，但是网上没有太多很好的资料（明明是那么出名的一个系统...）。在网上翻到了Google在Google I/O 2008介绍Android的初代虚拟机dalvik的视频，我就来次赛博考古，写篇小文章介绍一下一代神机dalvik。</p>
+<h2>dalvik设计初衷</h2>
+<p>dalvik最初是被设计在性能极度有限的初代手机上运行的：
+- 较慢的CPU
+- 极其有限的内存（总共64MB，运行系统服务后可用大概10MB）
+- 缺少swap空间</p>
+<p>尽管Android被设计为运行java程序，但java将每个类都编译为单独的.class文件，有一些信息（如版本字符串等）会在多个.class中重复。为了减少文件体积，降低重复。Google选择将多个.class文件整合为一个dex文件，作为dalvik上的执行文件。将多个类合并可以整合各个类中的重复部分。Google的测试表明，相较原本的.class文件，jar（压缩的.class文件）大小为原来的约50%，而dex文件为原来的约45%。</p>
+<h2>节约可用内存 -&gt; Zygote</h2>
+<p>dalvik的设计背景中，留给应用程序的可用内存只有10MB，而且几乎没有swap空间，这下swap机制也不管用了。</p>
+<p>Google设计人员将内存分为四类：
+- clean vs dirty
+  - clean：mmap()ed 且没有被写过
+  - dirty：malloc()ed 
+- shared vs private
+  - shared: 被多个进程共享
+  - private：只被一个进程使用</p>
+<p>优化内存时可以不用考虑clean内存，不管是shared还是private。因为clean内存有文件作为它的备份，内存不足时可以放心释放。</p>
+<p>dirty内存是重点考虑的对象。之前提到过几乎没有swap空间，dirty内存必须驻留在内存里。最坏的情况是private dirty。如果所有进程都使用一定量private dirty内存，内存空间会很快耗尽。shared dirty空间可以减少内存使用量。堆是一个典型的dirty区域，且是private的。能否将堆变成shared的呢？Google设计人员基于这样的观察：应用程序很少写堆，也就是说堆几乎是只读的。一个神奇的机制在共享“几乎只读”的区域上有完美的性能表现，即<em>Copy on write(COW)</em>。所以，便催生了<strong>Zygote</strong>进程。</p>
+<p>Zygote进程预先有一个堆和加载好的大量常用类。Android上的其他所有进程都由Zygote fork()自身而来。这样所有进程就相当于共享了同一个堆和大量的常用类。只有当进程实际写堆时，系统才会分配一小块内存给它，避免了浪费。且节约了常用类加载需要的时间和存储需要的空间。进程就相当于从受精卵(zygote)中“孵化”出来。不愧是天才设计。</p>
+<h2>快速GC -&gt; separated meta data</h2>
+<p>对象用于GC的meta data既可以跟对象的数据放在一起，也可以与对象数据分离，单独放在一块位置。dalvik虚拟机选择分离meta data。因为GC需要遍历对象meta data。这样做可以提高cache 命中率。</p>
+<h2>在低性能机器上高效工作 -&gt; Register Machine</h2>
+<p>传统的JVM是stack machine，即基于栈的虚拟机。dalvik是register machine，即基于寄存器的虚拟机。stack machine假设栈的大小无限，使用一个或多个栈来存储数据和中间结果，操作数（operands）被压入栈中，指令从栈中弹出操作数并进行计算，结果再被压回栈中。register machine假设有无限个可用的寄存器，计算直接在寄存器中进行。不同的虚拟机结构也意味着dalvik运行的bytecode和JVM是不一样的。事实上，dex文件中的byte code是dalvik自己的bytecode，称为dalvik bytecode，而不是JVM bytecode。</p>
+<p>具体的设计可以参见https://source.android.com/devices/tech/dalvik/dalvik-bytecode</p>
+<p>虽然stack machine的假设简单，但是很可能引入一些不必要的内存访问。在低性能的android手机上，Google认为采用register machine有如下优势：
+- 避免指令分发(instruction dispatch)
+- 避免不必要的内存访问
+- 更高效地处理指令
+  - 每条指令有更高的语义密度（个人认为即表达语义更精炼的意思）</p>
+<p>Google测试得到register machine相比stack machine减少了指令使用数量，但是增加了指令流的长度。</p>
+<h2>提高应用的速度 -&gt; Install time work</h2>
+<p>因为CPU的性能很差，Google希望尽可能减少应用运行时的CPU工作，而是尝试提前进行。具体提前的时机，就是在应用安装的时候。</p>
+<p>在应用安装时，dalvik预先对应用进行验证(verify)和优化(optimize)。</p>
+<p>优化工作主要是静态链接，内联一些特殊的native函数等等。</p>
+<p>值得注意的是这时候Google还说没有必要加入JIT（甚至专门做了一张ppt表示NO JIT）。给出的理由是JIT无关紧要，且编译出来的大量Native code会占用空间。并且认为Google提供的系统库已经接管了最需要性能的部分，如2/3D绘图和媒体，没有必要将用户代码也编译为native。当然我们知道后来的dalvik还是加上了JIT，甚至dalvik的后继者ART做得更加极端，直接上了AOT。不过尽可能将工作提前进行的优化方式还是没有变。</p>
+<h2>参考资料</h2>
+<p>【Google I_O 2008 - Dalvik Virtual Machine Internals】 https://www.bilibili.com/video/BV1Ps411K7AM</p>
+<p>dex ir设计参考资料：
+https://source.android.com/devices/tech/dalvik/dalvik-bytecode</p>
+<p>https://source.android.com/devices/tech/dalvik/instruction-formats.html</p>
+<p>https://source.android.com/devices/tech/dalvik/dex-format.html</p>
+        </article>
+        

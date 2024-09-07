@@ -1,0 +1,42 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>c++中有四种类型转换：<code>static_cast</code>, <code>reinterpret_cast</code>, <code>const_cast</code>, <code>dynamic_cast</code>。</p>
+<h2>static_cast</h2>
+<p>用于进行静态的语言允许的类型转换，比如int转float，或继承层次上的互相转换。也可进行由构造函数或者类型转换函数支持的转换。不能进行语言不允许的转换，如转换两个完全不相关的类型会失败。</p>
+<p><code>static_cast</code>是不安全的。比如B继承A。可以用<code>static_cast</code>将一个<code>A*</code>的指针转换成<code>B*</code>的指针，即使<code>A*</code>指向的对象实际上不是<code>B</code>。</p>
+<h2>reinterpret_cast</h2>
+<p>用于进行静态的类型转换。它比<code>static_cast</code>更强大，可以进行语言上不允许的类型转换。比如有两个完全无关的类<code>C</code>,<code>D</code>，可以用<code>reinterpret_cast</code>将<code>C*</code>转换为<code>D*</code>。</p>
+<p><code>reinterpret_cast</code>执行的是字面上的<em>重新解释</em>。即不改变指针或引用的数值，只是重新解释它。</p>
+<p>同样不安全。</p>
+<h2>const_cast</h2>
+<p><code>const_cast</code>只有一种简单的用途，即去除<code>const</code>限定符。</p>
+<div class="codehilite"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">i</span><span class="p">;</span>
+<span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">const_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">p0</span><span class="p">);</span>
+</code></pre></div>
+
+<h2>dynamic_cast</h2>
+<p>用于进行<strong>动态</strong>的类型转换。原理是RTTI。因此只能执行类与类之间的转换。并且要求至少有一个虚函数表。最常见的用途是执行继承层次上的向下转换（即基类转子类）。</p>
+<p>当转换失败时，如果转换的是指针，会得到结果<code>nullptr</code>。如果转换的是引用，会抛出异常。</p>
+        </article>
+        

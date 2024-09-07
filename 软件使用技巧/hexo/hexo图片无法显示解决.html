@@ -1,0 +1,34 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>问题</h2>
+<p>使用markdown作为源文件，hexo生成html网页。打开网页却发现所有引用的图片都无法加载成功。markdown中以相对路径，即<code>![](xxx.png)</code>的方式引用图片。
+尝试将图片放置在markdown源文件同一个文件夹中也无法解决问题。</p>
+<h2>关键</h2>
+<p>最大的问题在于hexo在将markdown渲染为html时，极其暴力地将markdown的图片引用（无论是相对引用还是绝对引用）都翻译为相对网站根目录的绝对引用。</p>
+<p>如：文件夹<code>_posts/post.md</code>和图片<code>_posts/img.png</code>。经过hexo渲染后，会生成一个类似于<code>2024/7/23/post/index.html</code>的文件。
+其中，对图片的引用<code>![](xxx.png)</code>会被渲染为<code>&lt;img src="/xxx.png"&gt;</code>。显然，这是一个绝对路径引用。在此路径下找不到图片，自然无法显示。</p>
+<h2>解决方案</h2>
+<p>最简单的解决方案就是把图片放到hexo认为它应该在的地方（Make them happy）。</p>
+<p>hexo的网站根路径位于<code>public</code>文件夹。只要在<code>public</code>文件夹中新建一个文件夹用于存放图片（当然，也可以利用现成的<code>images</code>文件夹）。比如，将img.png复制到<code>images</code>文件夹中，然后将markdown的图片引用改成<code>images/img.png</code>，就能愉快地显示图片了。（如果你不想改markdown文件，甚至可以直接将图片丢到public根目录下，这样也能显示。或者可以改一改html文件的img控件内容）。</p>
+        </article>
+        

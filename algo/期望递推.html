@@ -1,0 +1,57 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>背景</h2>
+<p>农上线了一款新皮肤——姬小满的战舞者。皮肤的获取是通过投骰子走地图的方式进行的。</p>
+<p>地图一共12格，投一次骰子的结果也可能在1~12间取值。当走到地图终点（即走完12格），就可以获得皮肤。每一投需要花费30点券（即RMB 3元）。如果按最坏情况来算，一共要投12次，即36元才能得到这个皮肤，这太贵了！</p>
+<p>投一次骰子得到各个值的概率并不相等。投一次骰子得到值<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>i</mi></mrow></math>的概率以<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msub><mi>p</mi><mi>i</mi></msub></mrow></math>来表示。具体概率为：</p>
+<div class="codehilite"><pre><span></span><code>p = [0.72, 0.13, 0.03, 0.02, 0.02, 0.015, 0.015, 0.01, 0.01, 0.01, 0.01, 0.01]
+</code></pre></div>
+
+<p>囊中羞涩的牢玩家想要知道，获得皮肤的期望投骰子次数是多少。换句话说，即不断投骰子，直到总点数不小于12，期望的投骰子数是多少。</p>
+<p>如果直接计算投一次骰子的期望<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>s</mi></mrow></math>并认为期望次数是<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mn>12</mn><mo>&#x0002F;</mo><mi>s</mi></mrow></math>，是错误的。</p>
+<p>这个问题需要使用期望递推求解。</p>
+<p>期望递推一般采用逆推，即从终点逆推到起点。定义状态为从当前状态到终点状态需要的期望次数：</p>
+<p>即我们定义<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mi>S</mi><mo stretchy="false">&#x00029;</mo></mrow></math>表示当前点数为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>S</mi></mrow></math>时投到点数不少于12点需要的期望次数。</p>
+<p>显然，<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mn>12</mn><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mn>0</mn></mrow></math>，从<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mn>0</mn></mrow></math>开始投的期望为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mn>0</mn><mo stretchy="false">&#x00029;</mo></mrow></math>。</p>
+<p>从当前点数<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>S</mi></mrow></math>到达12的期望为：
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0010</mn><mi></mi></mrow></math>
+我们可以认为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mn>0</mn><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo>&#x02265;</mo><mn>12</mn><mo stretchy="false">&#x00029;</mo></mrow></math>
+</p>
+<p>从而得到了<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mi>S</mi><mo stretchy="false">&#x00029;</mo></mrow></math>的递推式。从<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mn>12</mn><mo stretchy="false">&#x00029;</mo></mrow></math>开始逆序递推求解，就能得到答案<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mn>0</mn><mo stretchy="false">&#x00029;</mo></mrow></math>，计算得到<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mn>0</mn><mo stretchy="false">&#x00029;</mo></mrow></math>大约为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mn>7.0525750764758595</mn></mrow></math>，即大概7抽210点券就能拿下皮肤。算上首抽一元活动，期望190点券就能拿下。</p>
+<h2>期望递推的数学原理</h2>
+<p>在我们的递推式中，出现了一个很诡异的模式：概率乘期望。看起来，这和我们平常计算期望的方式格格不入。</p>
+<p>期望递推事实上基于<strong>全期望公式</strong>，即：
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0018</mn><mi></mi></mrow></math>
+</p>
+<p>记<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>Y</mi></mrow></math>为骰子投到的点数，我们可以重新解释上面的递推公式：
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0022</mn><mi></mi></mrow></math>
+即当前点数为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>S</mi></mrow></math>投到12的期望次数为在投出一枚骰子投到<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>Y</mi></mrow></math>的条件下再从<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>S</mi></mrow></math>到达12的期望次数的期望（真长！）</p>
+<p>而<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mi>S</mi><mo stretchy="false">&#x0007C;</mo><mi>Y</mi><mo stretchy="false">&#x00029;</mo></mrow></math>就能跟之前的期望值扯上关系。投一枚骰子得到<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>Y</mi></mrow></math>再到达12的期望次数为投一枚骰子的花费（1）加上从<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>S</mi><mo>&#x0002B;</mo><mi>Y</mi></mrow></math>到达12的期望（<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo stretchy="false">&#x00028;</mo><mi>S</mi><mo>&#x0002B;</mo><mi>Y</mi><mo stretchy="false">&#x00029;</mo></mrow></math>）。即
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0031</mn><mi></mi></mrow></math>
+</p>
+<p>从而，
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0033</mn><mi></mi></mrow></math>
+</p>
+<p>当然这太长了，实际运用期望递推时请相信自己的直觉，直接建立期望值之间的递推关系即可。一般不需要扯上条件期望。</p>
+        </article>
+        

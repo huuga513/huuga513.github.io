@@ -1,0 +1,56 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>进程间程序分析的基础是ICFG。CFG是单个procedure的控制流图，ICFG则是全程序的控制流图。</p>
+<h2>ICFG的构建</h2>
+<p>在CFG的call point处出发，增加call edge和return edge，就得到了ICFG。具体来说，从call point的出口连接到callee function的入口，得到call edge；从callee function的出口连接到call point的下一条语句的入口，得到return edge。</p>
+<p><img alt="" src="ICFG.png" /></p>
+<p>有些callee function可以在编译期确定，但有些不行。如virtual function。这是就需要应用一些技术来构建ICFG。</p>
+<h3>CHA (Class Hierarchy Analysis)</h3>
+<p>由Jeff Dane提出，仅仅通过引用的类型来确定所有可能被调用的virtual function。优点是迅速，缺点是精度可能较低。</p>
+<p>假设有类层次:</p>
+<div class="codehilite"><pre><span></span><code>A-B-C
+  |
+  +-D
+</code></pre></div>
+
+<p>其中A，C，D都实现了方法f。</p>
+<p>假设有下面一段代码：</p>
+<div class="codehilite"><pre><span></span><code><span class="n">C</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span>
+<span class="n">c</span><span class="p">.</span><span class="na">f</span><span class="p">();</span>
+</code></pre></div>
+
+<p>CHA将得到<code>Resolve(c.f) = {Dispath(C,f)} = {C.f}</code></p>
+<div class="codehilite"><pre><span></span><code><span class="n">A</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span>
+<span class="n">a</span><span class="p">.</span><span class="na">f</span><span class="p">();</span>
+</code></pre></div>
+
+<p>CHA将得到<code>Resolve(a.f) = {Dispath(A,f), Dispath(B,f), Dispath(C, f), Dispath(D,f)} = {A.f, C.f, D.f}</code></p>
+<p>即CHA认为一个virtual call可能call的对象为<code>Resolve(A.f) = {Dispath(X,f) for X in subclassOf(A)}</code>。（当然，subclassOf(A)中包括A自身）。</p>
+<h3>PTA （Pointer Analysis）</h3>
+<p>指针分析可以确定一个引用可能指向的对象，进而缩小可能调用对象的范围。</p>
+<h2>ICFG上的数据流分析</h2>
+<p>除了之前在CFG中的Node Transformer外，现在要加上call edge和return edge的edge transformer，来模拟传参和返回的过程。</p>
+<p>首先来讨论call site的node transformer。其唯一的转换就是kill掉赋值LHS的变量的值。</p>
+<p>以上图为例，call edge传递信息<code>x=6</code>。return edge传递信息<code>b = 7</code>。call to return edge（黑色边）传递信息<code>a = 6</code></p>
+        </article>
+        

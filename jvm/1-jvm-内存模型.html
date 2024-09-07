@@ -1,0 +1,38 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p><img alt="" src="JVM_mem_module.png" /></p>
+<p>JVM内存模型中，PC，栈都是线程独有的，堆和方法区是线程共有的。</p>
+<p>PC指示了当前线程运行到的字节码的位置，和处理器的PC功能类似。不过，当前线程执行的是Native代码时，PC为0（undefined）。</p>
+<p>栈分为JVM栈和Native栈。线程的字节码在JVM栈上运行，而Native代码在Native栈上运行。JVM规约并没有规定Native的语言和格式，由虚拟机自己决定。</p>
+<p>堆空间由所有进程共享。GC也发生在堆上。一般而言，对象和数组都是在堆上分配的。</p>
+<p>方法区在规约中被分为堆的一部分。很多人也将其称为非堆（Non-heap），以与堆相区别。方法区主要存放一些静态变量，常量和加载类信息等。可以不严谨地类比ELF文件中的.data，.bss区。</p>
+<h2>java对象内存布局</h2>
+<p>一个java对象在内存中分为三个部分：对象头（header），实例数据（instance data）和对齐填充（padding）。</p>
+<p>Header为哈希值，对象类信息等信息。实例数据就是对象的各个成员数据。</p>
+<h2>java对象分配</h2>
+<p>Java对象由JVM分配。首先，JVM使用内存分配器为对象分配出足够的空间。一种简单的内存分配器实现为碰撞指针。碰撞指针将可用内存分为两部分：已用内存和未用内存。
+通过移动分隔这两部分的指针来完成内存分配。C/C++的内存分配器与这类实现有显著不同，主要是因为Java中不存在指针，JVM可以随意移动对象，来减少内部碎片 。</p>
+<p>然后，JVM将对分配的空间进行初始化。具体来说，即填写Header中的字段，并将Instance data初始化为0。完成空间初始化后，JVM再调用类的构造函数完成用户所需的对象构造。
+用户的构造函数总是可以假设它需要处理的成员已经被初始化为0。</p>
+        </article>
+        

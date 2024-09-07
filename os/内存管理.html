@@ -1,0 +1,43 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>目标：实现<code>kmalloc</code>和<code>kfree</code>，用于在内核中分配和释放一块内存</p>
+<div class="codehilite"><pre><span></span><code><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">kmalloc</span><span class="p">(</span><span class="kt">size_t</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">kfree</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">);</span>
+</code></pre></div>
+
+<h1>Buddy System</h1>
+<p>目标：<code>get_free_pages</code>, <code>free_pages</code>， 用于分配一片连续的页和释放一片连续的页</p>
+<h2>初始化</h2>
+<p>从大到小（为什么？）</p>
+<div class="codehilite"><pre><span></span><code><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">get_free_pages</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">order</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">free_pages</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">page</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">order</span><span class="p">);</span>
+</code></pre></div>
+
+<h1>slab</h1>
+<p>目标：<code>slab_alloc</code>, <code>slab_free</code>， 用于分配一块小的空间</p>
+<h2>追踪一个obj属于的slab</h2>
+<h1>kmalloc</h1>
+<p>结合buddy system和slab的功能，实现随意分配内存空间</p>
+<h1>两种方法结合使用的原因</h1>
+        </article>
+        

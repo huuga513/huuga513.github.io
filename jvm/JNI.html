@@ -1,0 +1,99 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p><code>JavaVM</code>代表java虚拟机，<code>JNIEnv</code>代表Java环境。</p>
+<p>一个java进程运行在一个独立的JavaVM实例上，而每个java进程与一个<code>JNIEnv</code>对象管理关联。</p>
+<p><code>JavaVM</code>通常用于控制 JVM 的启动和停止，获取<code>JNIEnv</code>对象。而<code>JNIEnv</code>通常用于调用本地方法，创建对象等。</p>
+<p><code>JavaVM</code> 和 <code>JNIEnv</code> 都是 Java Native Interface (JNI) 中的重要组成部分，但它们扮演的角色和用途不同。下面详细解释两者的区别：</p>
+<h3>JavaVM</h3>
+<p><code>JavaVM</code> 是 Java 虚拟机的接口，它是一个 C 接口，用于与 Java 虚拟机交互。<code>JavaVM</code> 提供了几个重要的方法，包括启动和关闭 JVM、获取当前线程的 <code>JNIEnv</code> 指针等。通过 <code>JavaVM</code>，您可以控制整个 JVM 的生命周期，并且可以获取到 <code>JNIEnv</code> 指针来进一步操作 Java 对象和方法。</p>
+<h3>JNIEnv</h3>
+<p><code>JNIEnv</code> 是一个指向 JNI 环境结构的指针，它提供了与 Java 虚拟机交互的具体方法。<code>JNIEnv</code> 包含了大量的函数指针，用于执行各种操作，比如创建 Java 对象、调用 Java 方法、获取和设置字段值等。简单来说，<code>JNIEnv</code> 是您在本地代码中调用 Java 代码的主要接口。</p>
+<h3>区别总结：</h3>
+<ol>
+<li><strong>目的和作用</strong>：</li>
+<li><code>JavaVM</code> 是 JVM 的接口，用于控制 JVM 的启动和停止。</li>
+<li>
+<p><code>JNIEnv</code> 是 JNI 环境的指针，用于在本地代码中与 Java 代码交互。</p>
+</li>
+<li>
+<p><strong>使用场景</strong>：</p>
+</li>
+<li><code>JavaVM</code> 通常在初始化和终止 JVM 时使用。</li>
+<li>
+<p><code>JNIEnv</code> 在本地代码中被频繁使用，用于执行具体的 JNI 操作。</p>
+</li>
+<li>
+<p><strong>生命周期</strong>：</p>
+</li>
+<li><code>JavaVM</code> 的生命周期覆盖整个 JVM 运行周期。</li>
+<li>
+<p><code>JNIEnv</code> 的生命周期通常与某个特定的 Java 线程关联。</p>
+</li>
+<li>
+<p><strong>获取方式</strong>：</p>
+</li>
+<li><code>JavaVM</code> 可以通过调用 <code>JNI_CreateJavaVM</code> 或者在 Java 代码中通过 <code>System.loadLibrary</code> 加载本地库后在本地方法中获得。</li>
+<li><code>JNIEnv</code> 可以通过 <code>JavaVM</code> 的 <code>GetEnv</code> 或 <code>AttachCurrentThread</code> 方法获得。</li>
+</ol>
+<h3>示例</h3>
+<p>以下是一个简单的示例，展示了如何使用 <code>JavaVM</code> 和 <code>JNIEnv</code>：</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;jni.h&gt;</span>
+
+<span class="c1">// 声明一个全局变量，存储 JavaVM 的引用</span>
+<span class="n">JavaVM</span><span class="w"> </span><span class="o">*</span><span class="n">g_jvm</span><span class="p">;</span>
+
+<span class="c1">// 本地方法示例</span>
+<span class="n">JNIEXPORT</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">JNICALL</span><span class="w"> </span><span class="n">Java_MyClass_nativeMethod</span><span class="p">(</span><span class="n">JNIEnv</span><span class="w"> </span><span class="o">*</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">jobject</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// 使用 env 来调用 Java 方法</span>
+<span class="p">}</span>
+
+<span class="c1">// JNI_OnLoad 是 JNI 的入口点</span>
+<span class="n">JNIEXPORT</span><span class="w"> </span><span class="n">jint</span><span class="w"> </span><span class="n">JNICALL</span><span class="w"> </span><span class="n">JNI_OnLoad</span><span class="p">(</span><span class="n">JavaVM</span><span class="w"> </span><span class="o">*</span><span class="n">vm</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">reserved</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// 保存 JavaVM 的引用</span>
+<span class="w">    </span><span class="n">g_jvm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// 返回版本号</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">JNI_VERSION_1_6</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// 示例：从非 Java 线程中调用 Java 方法</span>
+<span class="kt">void</span><span class="w"> </span><span class="n">callJavaFromNonJavaThread</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">JNIEnv</span><span class="w"> </span><span class="o">*</span><span class="n">env</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// 附加当前线程到 JVM</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">g_jvm</span><span class="o">-&gt;</span><span class="n">AttachCurrentThread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// 处理错误</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 使用 env 指针调用 Java 方法</span>
+<span class="w">    </span><span class="c1">// ...</span>
+
+<span class="w">    </span><span class="c1">// 分离当前线程</span>
+<span class="w">    </span><span class="n">g_jvm</span><span class="o">-&gt;</span><span class="n">DetachCurrentThread</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>在上面的示例中，<code>JavaVM</code> 用于在非 Java 线程中附加和分离当前线程，并获取 <code>JNIEnv</code> 指针来调用 Java 方法。</p>
+<p>总之，<code>JavaVM</code> 和 <code>JNIEnv</code> 在 JNI 中扮演着不同的角色，但它们紧密相关，共同协作以实现 Java 和本地代码之间的互操作。</p>
+        </article>
+        

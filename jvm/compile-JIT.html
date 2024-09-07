@@ -1,0 +1,38 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>JVM在运行时监测代码的执行情况，并将热点代码（hot spot code）编译为native提高执行效率</p>
+<h2>热点代码</h2>
+<p>hot spot code分两种：
+- 频繁执行的方法
+- 频繁执行循环体
+当然，不管是哪种代码触发了JIT编译，最终编译的单元都是一整个方法体。</p>
+<h3>热点探测（hot spot code detection）</h3>
+<p>JVM有两种方式进行探测。
+- 基于采样的探测方法：
+  - JVM周期性地检查各个线程的调用顶栈。如果一个方法出现得特别多，它就是热点方法。不需要为每个方法都维护计数器。JVM只需要维护较少的计数器。
+- 基于计数器的探测方法：
+  - JVM为每一个方法维护两个计数器：调用计数器和回边计数器。调用计数器记录本方法被调用的次数。回边（“回边”的意思就是指在循环边界往回跳转）计数器记录本方法内循环体被执行的次数。一旦计数器超过阈值，JVM便向JIT编译器提交编译请求。计数器的值反应代码执行的相对次数。因此存在“热度衰减”。</p>
+<h3>Native代码执行</h3>
+<p>在调用一个方法时，JVM优先选择（如果有）已经编译好了的本地代码。当JIT编译完成时，JVM既可以选择在下一次调用时执行，也可以选择执行“栈上替换”，在方法还在运行时就替换代码。</p>
+        </article>
+        

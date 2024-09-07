@@ -1,0 +1,44 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>ACID是事务处理的四个基本属性的缩写。
+1. <strong>原子性（Atomicity）</strong><br />
+   原子性是指一个事务的所有操作要么全部完成，要么完全不执行。如果事务的一部分成功执行而另一部分失败，则整个事务被视为失败，并且所有由该事务所做出的更改都将被回滚（撤销），从而确保数据库中的数据不会处于部分更新的状态。</p>
+<ol>
+<li>
+<p><strong>一致性（Consistency）</strong><br />
+   一致性保证了任何事务只能将数据库从一个一致状态转换到另一个一致状态，也就是说，事务在执行前后都必须满足所有的约束条件、断言和业务规则。换句话说，一致性即数据库中的数据与其所反映的现实世界保持一致。比如A转账给B 5元，A和B的账户总和应不变。</p>
+</li>
+<li>
+<p><strong>隔离性（Isolation）</strong><br />
+   隔离性是指并发执行的事务之间不能相互干扰。并发的tx理想情况下应和串行的tx一样。</p>
+</li>
+<li><strong>持久性（Durability）</strong><br />
+   持久性是指一旦事务提交，它对数据库所做的更改将会永久保存下来，即使是在系统出现故障之后也是如此。这意味着只要事务被确认为已提交，那么即使发生崩溃，这些更改也不会丢失。</li>
+</ol>
+<p>TX的作用就是保证能将数据从一个一致的状态迁移到另一个一致的状态。</p>
+<p>SQL是一种描述将磁盘数据转移到内存中的语言，其操作可以抽象为两种：
+1. read(x) 从磁盘转移x到内存
+2. write(x) 将x从内存写到磁盘。write可能会因为系统crash失败。</p>
+<p>PM即使有DAX，因为cache的存在，也可以理解为一个从NV存储移动到V存储的过程。</p>
+        </article>
+        

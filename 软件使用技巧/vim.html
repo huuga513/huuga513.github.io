@@ -1,0 +1,32 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>删除所有不含关键字的行</p>
+<div class="codehilite"><pre><span></span><code>:g!/&lt;keyword&gt;/d
+</code></pre></div>
+
+<p>将所有TOID(xxx)替换为xxx</p>
+<div class="codehilite"><pre><span></span><code><span class="p">:</span>%s<span class="sr">/TOID\(([^\)])\)/</span>\<span class="m">1</span>*
+<span class="p">:</span>%s<span class="sr">/TOID_IS_NULL\(([^\)]*)\)/</span><span class="p">(</span>\<span class="m">1</span><span class="p">==</span>NULL<span class="p">)</span>
+</code></pre></div>
+        </article>
+        

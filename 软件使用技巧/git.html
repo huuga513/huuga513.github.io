@@ -1,0 +1,39 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h1>列出追踪的所有文件：</h1>
+<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>ls-files
+</code></pre></div>
+
+<h1>删除垃圾文件</h1>
+<p>要删除所有Git不追踪的文件（即在.gitignore文件中指定的或未被git add过的文件），可以使用以下命令：</p>
+<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clean<span class="w"> </span>-f
+</code></pre></div>
+
+<p>这里的 <code>-f</code> 或 <code>--force</code> 参数是强制删除的意思。</p>
+<p>如果你还想删除未被追踪的目录，需要加上 <code>-d</code> 参数：</p>
+<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clean<span class="w"> </span>-fd
+</code></pre></div>
+
+<p>请注意，这个操作是不可逆的，执行前请确保这些文件是可以安全删除的。如果不确定，可以先用 <code>git clean -n</code> 命令来查看哪些文件将被删除，而不实际执行删除操作。</p>
+        </article>
+        

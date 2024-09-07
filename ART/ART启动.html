@@ -1,0 +1,68 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>ART是一个C++程序。用于执行dex字节码，也兼容JVM字节码。其直接运行在linux上。不存在ART运行在JVM上的说法。</p>
+<p>JVM提供了JNI来在Native层次上操纵JVM（包括启动JVM）。C/C++可以通过<code>JavaVM</code>实例来操作JVM。对应的，ART也提供了一套JNI接口，相应的函数从<code>libart.so</code>中加载，是相对独立的接口，而不是直接使用java的JNI库。对应<code>JavaVM</code>的是<code>JavaVMExt</code>，用来代表一个ART实例。</p>
+<p>手机运行的是linux系统。linux系统中第一个进程init可以通过读取配置脚本执行脚本命令。在android手机中，init的配置脚本为启动/system/bin/app_process。</p>
+<p>app_process用于启动ART，并在ART上运行一个java程序。当启动Zygote时，这个java程序是<code>com.android.internal.os.ZygoteInit</code></p>
+<p>语句是：</p>
+<div class="codehilite"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">zygote</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">runtime</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="s">&quot;com.android.internal.os.ZygoteInit&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">zygote</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<p>其中，runtime的定义是：</p>
+<div class="codehilite"><pre><span></span><code><span class="n">AppRuntime</span><span class="w"> </span><span class="nf">runtime</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">computeArgBlockSize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">));</span>
+</code></pre></div>
+
+<p>而<code>AppRuntime</code>的类型是：</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AppRuntime</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">AndroidRuntime</span>
+</code></pre></div>
+
+<p>所以，runtime.start为：</p>
+<div class="codehilite"><pre><span></span><code><span class="cm">/*</span>
+<span class="cm"> * Start the Android runtime.  This involves starting the virtual machine</span>
+<span class="cm"> * and calling the &quot;static void main(String[] args)&quot; method in the class</span>
+<span class="cm"> * named by &quot;className&quot;.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Passes the main function two arguments, the class name and the specified</span>
+<span class="cm"> * options string.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">AndroidRuntime::start</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">className</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">String8</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">zygote</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">//...</span>
+<span class="w">    </span><span class="n">JniInvocation</span><span class="w"> </span><span class="n">jni_invocation</span><span class="p">;</span><span class="w"> </span>
+<span class="w">    </span><span class="n">jni_invocation</span><span class="p">.</span><span class="n">Init</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span><span class="w">  </span><span class="c1">// 从libart.so中取出三个函数并保存，最重要的是JNI_CreateJavaVM</span>
+<span class="w">    </span><span class="n">JNIEnv</span><span class="o">*</span><span class="w"> </span><span class="n">env</span><span class="p">;</span><span class="w"> </span>
+<span class="w">    </span><span class="n">startVm</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mJavaVM</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">zygote</span><span class="p">)</span><span class="w"> </span><span class="c1">// 启动VM</span>
+<span class="w">    </span><span class="c1">//...</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p>附：JNI（Java Native Interface）提供了java和C/C++互操作的接口，
+详见https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaNativeInterface.html#zz-3.</p>
+</blockquote>
+<p>总而言之，这个过程启动了预热好的ART虚拟机（所谓预热是指提前将常用的java类加载进内存）。最后得到一个在ART上运行的Zygote进程。</p>
+<p>每一个Android进程都需要运行在一个独立的ART实例上。每当用户需要启动一个新进程时，launcher就将信息发送到zygote进程，由zygote在linux上fork自身产生一个新的ART实例并启动进程。当然可以让linux系统从启动ART开始启动一个新进程，但ART启动和预热都需要时间，fork可以节省时间。</p>
+<p>Insight:如果多个程序都需要同一个内存资源，可以通过fork复用。</p>
+        </article>
+        

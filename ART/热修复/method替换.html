@@ -1,0 +1,27 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <p>参考资料：《深入理解Android热修复技术原理》</p>
+<p>技术原理：ART在运行类代码时不会检查代码是否被篡改。在程序运行时动态将要更新类的类对象中的method对象替换为更新完成的类中的method对象就可以实现热修复。</p>
+<p>但是，由于是hacking技术，利用了不检查代码的特性。当使用反射调用非静态代码时，ART会检查receiver object和method 的class是否一样。这样就会报错。并且只支持方法的替换，因为本质上是将原class object的method换成新的，原class object的method槽数是固定的，不能增加也不能减少（减少也许可以？）。</p>
+        </article>
+        

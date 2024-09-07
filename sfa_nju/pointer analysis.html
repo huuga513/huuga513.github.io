@@ -1,0 +1,116 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>指针分析的性质</h2>
+<h3>Flow sensitive</h3>
+<table>
+<thead>
+<tr>
+<th>Flow-sensitive</th>
+<th>Flow-insensitive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Respect the execution order of the program</td>
+<td>Ignore the control-flow order, treat the program as a set of unordered statements</td>
+</tr>
+<tr>
+<td>Maintain a map of points-to relations at each program location</td>
+<td>Maintain one map of points-to relations for the whole program</td>
+</tr>
+</tbody>
+</table>
+<h3>Context sensitive</h3>
+<table>
+<thead>
+<tr>
+<th>Context-sensitive</th>
+<th>Context-insensitive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Distinguish different calling contexts of a method</td>
+<td>Merge all calling contexts of a method</td>
+</tr>
+<tr>
+<td>Analyze each method multiple times, once for each context</td>
+<td>Analyze each method once</td>
+</tr>
+</tbody>
+</table>
+<h3>Analysis Scope</h3>
+<table>
+<thead>
+<tr>
+<th>Whole-program</th>
+<th>Demand-driven</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compute points-to information for all pointers in the program</td>
+<td>Only compute points-to information for the pointers that may affect specific sites of interest (on demand)</td>
+</tr>
+<tr>
+<td>Provide information for all possible clients</td>
+<td>Provide information for specific clients</td>
+</tr>
+</tbody>
+</table>
+<h2>指针分析的关注语句</h2>
+<p>只有四条语句对指针分析而言有意义：
+- Assign
+- Address
+- Load
+- Store</p>
+<p>在Java中，分别对应：</p>
+<div class="codehilite"><pre><span></span><code><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span><span class="w">       </span><span class="c1">// 1</span>
+<span class="n">C</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">C</span><span class="p">;</span><span class="w"> </span><span class="c1">// 2</span>
+<span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="na">f</span><span class="p">;</span><span class="w">     </span><span class="c1">// 3</span>
+<span class="n">c</span><span class="p">.</span><span class="na">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w">     </span><span class="c1">// 4</span>
+</code></pre></div>
+
+<h2>指针分析的图</h2>
+<p>启示：同一个程序的指针关系可以用不同的图表示</p>
+<h3>PFG (Pointer Flow Graph)</h3>
+<p>PFG是一张有向图，图上的节点是指针（对Java而言是引用，包括引用变量和对象的引用成员）。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>x</mi><mo>&#x02192;</mo><mi>y</mi></mrow></math>代表<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>x</mi></mrow></math>指向的对象<strong>有可能</strong>流向<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>y</mi></mrow></math>。 </p>
+<p>New语句给出了一个指针初始可能指向的抽象对象。指针分析就是PFG上的传递闭包。</p>
+<ul>
+<li>
+<p>PFG的循环依赖
+  看似指针分析的过程是先求出PFG，再在PFG上求一个传递闭包。但是PFG的构建实际上也依赖指针分析的结果。我们同样要将PFG的构建视为一个不等式约束问题，利用格理论求解。动态地向PFG上添加边，直到没有边被添加。</p>
+</li>
+<li>
+<p>算法实现细节
+  TODO：differential propagate</p>
+</li>
+</ul>
+<h3>Constraint Graph</h3>
+<p>SVF transforms LLVM instructions into a graph representation, PAG. Each node (PAGNode) represents a pointer, and each edge (PAGEdge) represents a constraint between two pointers.</p>
+<p>There are two main kinds of SVFVar: ValVar (ValPN) represents a pointer and ObjVar (ObjPN) represents an abstract object. GepObjVar (GepObjPN), which is a subclass of ObjVar (ObjPN), represents a field of an aggregate object. GepValVar (GepValPN), which is a subclass of ValVar (ValPN), represents an introduced dummy node to achieve field sensitivity when handling external library calls (e.g., memcpy, where pointers (LLVM Values) that point to the fields of an struct do not explicitly appear at an instruction). RetPN represents the unique return of a procedure. VarArgPN denotes a variadic argument of a procedure.</p>
+<h2>跨procedure指针分析</h2>
+<p>添加call语句的规则。</p>
+<p>只需要分析reachable的method。以main作为root method开始。分析一个method时，addReachable（处理new 和 赋值 语句）并更新work list。如果不是root method还要应用call的规则。然后继续大循环处理load和store。</p>
+        </article>
+        

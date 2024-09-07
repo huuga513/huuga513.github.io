@@ -1,0 +1,31 @@
+
+        <meta charset=UTF-8>
+        <link rel="stylesheet" href="/css\styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css\github-markdown-light.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+
+            @media (max-width: 767px) {
+                .markdown-body {
+                    padding: 15px;
+                }
+            }
+        </style>
+        
+        <article class="markdown-body">
+        <h2>虚拟机分类</h2>
+<p>虚拟机可以分为process VM和system VM。process VM实现了ABI，ABI由ISA和syscall实现。system VM实现了一整套硬件。process VM典型代表是高级语言虚拟机。如JVM，其实现的ABI是java bytecode。从而实现compile once, run everywhere.</p>
+<p>ART最早出现在Android 4.4 当时还只是测试功能。在Android 5以后，ART已经完全取代了dalvik。</p>
+<p>尽管JVM和ART都可以被认为是广义的java虚拟机。但JVM执行的是.class文件形式存在的java bytecode，ART执行的是dex bytecode。</p>
+<p>ART有三种执行模式：interpreter，JIT，AOT。AOT(Ahead of time)是提前编译，提前将输入的dex编译为.oat格式输出。这是<code>dex2oat</code>工具的功能。其核心代码位于<code>art/compiler/</code></p>
+<h2>Android source code directory</h2>
+<p>主要关注三个文件夹：<code>dex2oat/</code>为<code>dex2oat</code>工具的接口代码；<code>compiler/</code>目录为AOT编译相关代码;<code>runtime/</code>目录为运行时相关代码。</p>
+        </article>
+        
