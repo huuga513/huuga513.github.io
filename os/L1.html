@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        
+        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <h1>L1-pmm 实验报告</h1>
 <h2>设计</h2>
@@ -27,17 +27,17 @@
 较为频繁的，以物理页面大小为单位的分配/释放 (4 KiB)；
 非常罕见的大内存分配。</p>
 <p>所以，我们的内存分配器需要既能满足分配大内存的要求（减少碎片），又能快速分配小内存。参考linux内核，采用buddy system+slab的实现。
-buddy system管理一系列连续<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msup><mn>2</mn><mi>i</mi></msup></mrow></math>个页的空间。slab管理一系列固定大小的小内存缓存池。</p>
+buddy system管理一系列连续$2^i$个页的空间。slab管理一系列固定大小的小内存缓存池。</p>
 <h3>kalloc</h3>
 <p><code>kalloc</code>依据要分配的大小选择从buddy system中分配还是从slab中分配。当分配的大小比较大，<code>kalloc</code>调用buddy system的分配页接口直接分配相应的页。
 否则，<code>kalloc</code>获取要分配的小内存大小对应的slab cache，并尝试从中直接分配小内存。</p>
 <h3>buddy system</h3>
-<p>参考linux的页表项，在heap中预留了一小块空间，专门用来存放每页的meta data。然后将剩下的heap分为一系列<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msup><mn>2</mn><mi>i</mi></msup></mrow></math>页的块，并保证对齐。</p>
+<p>参考linux的页表项，在heap中预留了一小块空间，专门用来存放每页的meta data。然后将剩下的heap分为一系列$2^i$页的块，并保证对齐。</p>
 <h3>slab</h3>
 <p>使用<code>kmem_cache_t</code>类型的结构来管理小的<code>slab</code>。每个小内存大小(32B, 64B, 128B, ...)都有自己的<code>kmem_cache_t</code>对象。<code>kmem_cache_t</code>可以从buddy system获得和删除页来构建<code>slab</code>。一个<code>slab</code>中存储了元数据和一系列大小相同的可用内存块。在每个可用内存块中都存储下一个可用内存块的地址。即<code>slab</code>中可用内存块构成链表结构。<code>kmem_cache_t</code>还为每个cpu都准备了<code>cpu_cache</code>。小内存的分配和释放优先从<code>cpu_cache</code>中进行，无需加锁。<code>cpu_cache</code>的内存块过多时再加锁向<code>kmem_cache_t</code>调整。</p>
 <h2>印象深刻的bug</h2>
 <h3>buddy system的初始化</h3>
-<p>教科书上的资料只介绍了buddy system应用于<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msup><mn>2</mn><mi>i</mi></msup></mrow></math>大小内存时的原理。但是，heap的大小并不刚好是<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msup><mn>2</mn><mi>i</mi></msup></mrow></math>。如果只考虑<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msup><mn>2</mn><mi>i</mi></msup></mrow></math>大小，会造成极大的浪费。问题在于如何将heap分成一系列大小为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msup><mn>2</mn><mi>i</mi></msup></mrow></math>页的块并同时保证对齐。</p>
-<p>一开始想利用heap大小的二进制表示来直接划分heap，但是难以满足对齐要求。后来参考linux kernel的实现，<code>addr</code>从页对齐的第一个地址开始，不断将heap按照<code>addr</code>划分出最大能对齐的连续页( <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>o</mi><mi>r</mi><mi>d</mi><mi>e</mi><mi>r</mi><mo>&#x0003D;</mo><msub><mi>log</mi><mn>2</mn></msub><mo stretchy="false">&#x00028;</mo><mi>a</mi><mi>d</mi><mi>d</mi><mi>r</mi><mo>&#x0002F;</mo><mi>P</mi><mi>A</mi><mi>G</mi><mi>E</mi><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0023</mn><mi></mi><mi>S</mi><mi>I</mi><mi>Z</mi><mi>E</mi><mo stretchy="false">&#x00029;</mo></mrow></math> )，然后释放这些连续页，让buddy system的释放逻辑来完成合并（这在释放逻辑实现正确的前提下是可行且一定正确的）。从而实现尽可能少浪费空间的对齐。</p>
+<p>教科书上的资料只介绍了buddy system应用于$2^i$大小内存时的原理。但是，heap的大小并不刚好是$2^i$。如果只考虑$2^i$大小，会造成极大的浪费。问题在于如何将heap分成一系列大小为$2^i$页的块并同时保证对齐。</p>
+<p>一开始想利用heap大小的二进制表示来直接划分heap，但是难以满足对齐要求。后来参考linux kernel的实现，<code>addr</code>从页对齐的第一个地址开始，不断将heap按照<code>addr</code>划分出最大能对齐的连续页( $order=\log_2(addr/PAGE_SIZE)$ )，然后释放这些连续页，让buddy system的释放逻辑来完成合并（这在释放逻辑实现正确的前提下是可行且一定正确的）。从而实现尽可能少浪费空间的对齐。</p>
         </article>
         

@@ -18,12 +18,14 @@
                 }
             }
         </style>
-        
+        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>代码优化的目标是在编译时发现有关程序运行时行为的信息，并利用该信息来改进代码。</p>
 <h2>代码优化的引入</h2>
-<p>以访问数组为例子，对于数组<code>a[m][n]</code>，每个元素占<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>s</mi></mrow></math>字节。一般来讲，访问数组元素<code>a[i][j]</code>需要计算：
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi></mi><mi>k</mi><mi>l</mi><mi>z</mi><mi>z</mi><mi>w</mi><mi>x</mi><mi>h</mi><mi>:</mi><mn>0003</mn><mi></mi></mrow></math>
+<p>以访问数组为例子，对于数组<code>a[m][n]</code>，每个元素占$s$字节。一般来讲，访问数组元素<code>a[i][j]</code>需要计算：
+$$
+a+i<em>n</em>s+j*s
+$$
 如果我们不知道任何上下文信息，只知道这是一个对数组元素的访问，那么完整地计算整个表达式是必不可少的。</p>
 <p>但是，如果我们知道一些上下文，比如说，这是一个对数组的依次遍历，我们就有机会减少每次访问数组元素的工作量。</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// 假设对数组的访问形式</span>
@@ -34,7 +36,7 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<p>我们的目标是尽可能减少最内层循环访问数组的工作量。首先我们注意到访问每次都要计算<code>j*s</code>。所以我们可以将内层循环的步长改为<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>s</mi></mrow></math>来减少一次乘法计算：</p>
+<p>我们的目标是尽可能减少最内层循环访问数组的工作量。首先我们注意到访问每次都要计算<code>j*s</code>。所以我们可以将内层循环的步长改为$s$来减少一次乘法计算：</p>
 <div class="codehilite"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">m</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="err">&#39;</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="err">&#39;</span><span class="o">&lt;</span><span class="n">n</span><span class="o">*</span><span class="n">s</span><span class="p">;</span><span class="n">j</span><span class="err">&#39;</span><span class="o">+=</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// a[i][j]的地址：</span>
@@ -83,7 +85,7 @@
 </code></pre></div>
 
 <p>这里面最后一条赋值语句中计算<code>a-d</code>是冗余的。</p>
-<p>为了发现这样的冗余计算，一个自然的想法是将有相同结果的表达式标识出来，然后就可以用简单的表达式替换复杂的表达式。（如上面就可以用<code>b</code>来代替<code>a-d</code>）。为表达式编号可以实现这一点。两个表达式<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msub><mi>e</mi><mn>1</mn></msub><mo>&#x0002C;</mo><msub><mi>e</mi><mn>2</mn></msub></mrow></math>有相同的编号，当且仅当在给定的上下文中<code>e_1=e_2</code>。比如，我们可以为<code>a</code>,<code>b+c</code>编号为1，为<code>b</code>和<code>a-d</code>编号为2，因为<code>c</code>和<code>b+c</code>值一样，所以<code>c</code>编号也为1。因为<code>d=a-d</code>的右边编号为2，所以可以使用任意编号为2的表达式替换<code>a-d</code>。</p>
+<p>为了发现这样的冗余计算，一个自然的想法是将有相同结果的表达式标识出来，然后就可以用简单的表达式替换复杂的表达式。（如上面就可以用<code>b</code>来代替<code>a-d</code>）。为表达式编号可以实现这一点。两个表达式$e_1,e_2$有相同的编号，当且仅当在给定的上下文中<code>e_1=e_2</code>。比如，我们可以为<code>a</code>,<code>b+c</code>编号为1，为<code>b</code>和<code>a-d</code>编号为2，因为<code>c</code>和<code>b+c</code>值一样，所以<code>c</code>编号也为1。因为<code>d=a-d</code>的右边编号为2，所以可以使用任意编号为2的表达式替换<code>a-d</code>。</p>
 <p>可是，问题并没有那么轻松地被解决。考虑下面的赋值串：</p>
 <div class="codehilite"><pre><span></span><code><span class="n">a</span><span class="o">=</span><span class="n">x</span><span class="o">+</span><span class="n">y</span>
 <span class="n">b</span><span class="o">=</span><span class="n">x</span><span class="o">+</span><span class="n">y</span>
@@ -100,7 +102,7 @@
 
 <p>现在我们知道，可以用<code>a0</code>或者<code>b</code>来代替<code>x+y</code>。</p>
 <p>LVN的概念已经全部介绍完，下面是一种简单的实现方式。</p>
-<p>用散列表来存储每个表达式的编号。在遇见一个表达式<code>t=l op r</code>时，算法查找<code>l</code>和<code>r</code>的编号，如果找到编号，则直接使用，否则创建新表项并分配新编号。假设<code>l</code>和<code>r</code>的编号是<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>v</mi><mo stretchy="false">&#x00028;</mo><mi>l</mi><mo stretchy="false">&#x00029;</mo></mrow></math>和<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>v</mi><mo stretchy="false">&#x00028;</mo><mi>r</mi><mo stretchy="false">&#x00029;</mo></mrow></math>，算法接下来以<code>v(l) op v(r)$为键（注意不是</code>l op r`，这是因为算法只关心值而不关心值是否由同一对计算出来的）进行查找，如果找到找到编号，则直接使用，否则创建新表项并分配新编号。</p>
+<p>用散列表来存储每个表达式的编号。在遇见一个表达式<code>t=l op r</code>时，算法查找<code>l</code>和<code>r</code>的编号，如果找到编号，则直接使用，否则创建新表项并分配新编号。假设<code>l</code>和<code>r</code>的编号是$v(l)$和$v(r)$，算法接下来以<code>v(l) op v(r)$为键（注意不是</code>l op r`，这是因为算法只关心值而不关心值是否由同一对计算出来的）进行查找，如果找到找到编号，则直接使用，否则创建新表项并分配新编号。</p>
 <p>总之，区域优化利用了bb是一个线性序列的性质，可以通过一次扫描实现。同时也是最简单的优化。</p>
 <h2>区域优化</h2>
 <p>区域优化针对多个bb。下面以<strong>超局部值编号</strong>和<strong>循环展开</strong>为例子。</p>

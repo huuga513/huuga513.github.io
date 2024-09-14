@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        
+        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <h2>指针分析的性质</h2>
 <h3>Flow sensitive</h3>
@@ -94,7 +94,7 @@
 <h2>指针分析的图</h2>
 <p>启示：同一个程序的指针关系可以用不同的图表示</p>
 <h3>PFG (Pointer Flow Graph)</h3>
-<p>PFG是一张有向图，图上的节点是指针（对Java而言是引用，包括引用变量和对象的引用成员）。<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>x</mi><mo>&#x02192;</mo><mi>y</mi></mrow></math>代表<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>x</mi></mrow></math>指向的对象<strong>有可能</strong>流向<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>y</mi></mrow></math>。 </p>
+<p>PFG是一张有向图，图上的节点是指针（对Java而言是引用，包括引用变量和对象的引用成员）。$x\rightarrow y$代表$x$指向的对象<strong>有可能</strong>流向$y$。 </p>
 <p>New语句给出了一个指针初始可能指向的抽象对象。指针分析就是PFG上的传递闭包。</p>
 <ul>
 <li>

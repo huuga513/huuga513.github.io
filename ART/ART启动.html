@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        
+        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>ART是一个C++程序。用于执行dex字节码，也兼容JVM字节码。其直接运行在linux上。不存在ART运行在JVM上的说法。</p>
 <p>JVM提供了JNI来在Native层次上操纵JVM（包括启动JVM）。C/C++可以通过<code>JavaVM</code>实例来操作JVM。对应的，ART也提供了一套JNI接口，相应的函数从<code>libart.so</code>中加载，是相对独立的接口，而不是直接使用java的JNI库。对应<code>JavaVM</code>的是<code>JavaVMExt</code>，用来代表一个ART实例。</p>
