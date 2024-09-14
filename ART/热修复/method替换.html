@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>参考资料：《深入理解Android热修复技术原理》</p>
 <p>技术原理：ART在运行类代码时不会检查代码是否被篡改。在程序运行时动态将要更新类的类对象中的method对象替换为更新完成的类中的method对象就可以实现热修复。</p>

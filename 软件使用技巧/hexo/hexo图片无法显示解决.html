@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <h2>问题</h2>
 <p>使用markdown作为源文件，hexo生成html网页。打开网页却发现所有引用的图片都无法加载成功。markdown中以相对路径，即<code>![](xxx.png)</code>的方式引用图片。

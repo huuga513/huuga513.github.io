@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>AOP(aspect-orient-programming)本质是一种自动插桩。它可以批量化在指定位置插入用户指定的代码（如特定method运行前后）。AOP解决的痛点是实际应用中为了保证安全性等原因，会在业务代码之外加入大量<strong>重复的</strong>，与业务代码关联性不强的代码。如安全检查或日志等。AOP实现了程序员只需要在语言中提供建议(advise)，就可以让编译器自动插入这些代码。</p>
 <p>AOP分为静态AOP和动态AOP。静态AOP速度最快，但每次调整都需要重新编译，AspectJ/AspectC是典型的静态AOP。动态AOP存在运行时开销，但是简单。</p>

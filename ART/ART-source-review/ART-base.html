@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <h2>虚拟机分类</h2>
 <p>虚拟机可以分为process VM和system VM。process VM实现了ABI，ABI由ISA和syscall实现。system VM实现了一整套硬件。process VM典型代表是高级语言虚拟机。如JVM，其实现的ABI是java bytecode。从而实现compile once, run everywhere.</p>

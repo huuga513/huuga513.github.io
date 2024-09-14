@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>java中被加载进内存的类都可以认为对应着一个类对象示例。也可以反过来认为，class文件是类对象序列化后的结果。类对象包含指定类型的meta data，包括method，constructor，field等。JVM加载类的过程就是生成类对象的过程。.class文件对人类是不可读的，使用javap工具可以阅读。</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// 遍历类public method</span>

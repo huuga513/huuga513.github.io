@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>在编译时，dex工具将多个.class文件转换为一个APK中的classes.dex文件。</p>
 <p>不能混淆.dex文件和.class文件。虽然与.class文件编码类似，但dex是一种独立的文件格式，有自己独立的描述约定和指令定义。</p>

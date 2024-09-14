@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <p>IR是编译器眼中程序的权威表示，编译器绝不会回头查看程序源代码。编译器眼中的程序就是IR。</p>
 <p>有不同种类的IR，如图IR，线性IR等。有人认为用树和图来表示程序最为自然，因此有图IR。而有人认为前端语言和后端语言（汇编）都是线性的，因此线性IR更适合优化。</p>

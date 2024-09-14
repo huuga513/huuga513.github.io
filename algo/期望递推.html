@@ -18,12 +18,12 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <h2>背景</h2>
 <p>农上线了一款新皮肤——姬小满的战舞者。皮肤的获取是通过投骰子走地图的方式进行的。</p>
 <p>地图一共12格，投一次骰子的结果也可能在1~12间取值。当走到地图终点（即走完12格），就可以获得皮肤。每一投需要花费30点券（即RMB 3元）。如果按最坏情况来算，一共要投12次，即36元才能得到这个皮肤，这太贵了！</p>
-<p>投一次骰子得到各个值的概率并不相等。投一次骰子得到值$i$的概率以$p_i$来表示。具体概率为：</p>
+<p>投一次骰子得到各个值的概率并不相等。投一次骰子得到值 $i$ 的概率以$p_i$来表示。具体概率为：</p>
 <div class="codehilite"><pre><span></span><code>p = [0.72, 0.13, 0.03, 0.02, 0.02, 0.015, 0.015, 0.01, 0.01, 0.01, 0.01, 0.01]
 </code></pre></div>
 

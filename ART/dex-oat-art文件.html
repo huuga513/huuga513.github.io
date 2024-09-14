@@ -18,7 +18,7 @@
                 }
             }
         </style>
-        <script id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
+        <script>MathJax={tex:{inlineMath:[['$','$']]},};</script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js"></script>
         <article class="markdown-body">
         <h2>dex文件</h2>
 <p>dex文件是dalvik虚拟机执行的字节码格式。即使在ART虚拟机已经取代dalvik虚拟机的今天，.dex文件仍然作为app的代码数据放置于app的apk包中。ART虚拟机并不能直接执行dex字节码（存疑），而是通过dex2oat工具在应用安装时生成oat文件（Optimized ART）。</p>
